@@ -1,3 +1,4 @@
+from email.mime import base
 import pygame
 import sys
 import random
@@ -28,6 +29,43 @@ def on_blink(headset, blink_strength):
     print("Blink detected.")
 
 headset.blink_handlers.append(on_blink)
+
+
+print("Calibrating... please don't blink for 10 seconds")
+start_time = time.time()
+raw_total = 0
+while (time.time()- start_time) < 11:
+    raw_total += headset.raw_value
+    time.sleep(1)
+
+base_line = raw_total / 10
+
+print("When you see START blink 10 times, pause for a second after blinks")
+
+time.sleep(2.5)
+print("START")
+numBlinks = 0
+threshold = 150
+start_time = time.time()
+while (time.time()- start_time) < 15:
+    attention = headset.attention
+    raw_val = headset.raw_value
+    if abs(raw_val) > threshold + abs(attention)/2 + base_line:
+        numBlinks += 1
+        time.sleep(.4)
+
+print(numBlinks)
+
+if numBlinks < 5:
+    threshold -= 25
+elif numBlinks < 10:
+    threshold -= 10
+elif numBlinks < 15:
+    threshold += 10
+else:
+    threshold += 25
+
+
 pygame.init()
 
 
@@ -113,8 +151,7 @@ class Stack:
     def addNewBrick(self):
         global colorIndex, speed
 
-        if colorIndex >= len(color):
-            colorIndex = 0
+        headset.attention % len(color)
         
         y = self.peek().y
         if score > 50:
@@ -216,9 +253,10 @@ def gameLoop():
                     close()
                 if event.key == pygame.K_r:
                     gameLoop()
-        if abs(headset.raw_value) > 200: #THIS IS THE ONLY THING need to change
+        attention = headset.attention
+        if abs(headset.raw_value) > threshold + abs(attention)/2 + base_line:
             stack.pushToStack()
-            time.sleep(.3)
+            time.sleep(.4)
             stack.addNewBrick()
             
                 
