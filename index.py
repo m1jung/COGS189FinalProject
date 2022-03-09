@@ -20,13 +20,7 @@ from os.path import join as pjoin
 
 name1 = input("Enter name : ")
 
-file = open('data.csv')
-csvreader = csv.reader(file)
-header = next(csvreader)
-rows = []
-for row in csvreader:
-    rows.append(row)
-file.close()
+
 
 
 learn_threshold = True
@@ -35,8 +29,8 @@ trial_only = False
 
 
 print("Connecting...")
-headset = mindwave.Headset('/dev/tty.MindWaveMobile-SerialPo') # mac version
-# headset = mindwave.Headset('COM6') # windows version. set up COM port first (see video)
+# headset = mindwave.Headset('/dev/tty.MindWaveMobile-SerialPo') # mac version
+headset = mindwave.Headset('COM8') # windows version. set up COM port first (see video) change COM6 to whichever
 print("Connected!")
 print("Starting...")
 headset.serial_open()
@@ -97,28 +91,24 @@ else:
             numBlinks += 1
             time.sleep(.4)
 
-    if name1 in rows[:][0]:
-        trial = 1
-        for element in rows:
-            if element == name1:
-                trial += 1
-    else:
-        trial = 1
-
-    # open the file in the write mode
-    f = open('data.csv', 'w')
-
-    # create the csv writer
-    writer = csv.writer(f)
-
-    # write a row to the csv file
-    writer.writerow([name1, trial, threshold, numBlinks])
-
-    # close the file
-    f.close()
+    #if name1 in rows[:][0]:
+    #    trial = 1
+    #    for element in rows:
+    #        if element == name1:
+    #            trial += 1
+    #else:
+    #    trial = 1
 
     
+import pandas as pd
 
+# reading the csv file
+df = pd.read_csv('data.csv')
+df.loc[len(df) + 1] = [name1, 1, threshold, numBlinks]
+
+# writing into the file
+df.to_csv('data.csv', mode='a', index=False, header = False)
+    
 
 
 if not trial_only:
